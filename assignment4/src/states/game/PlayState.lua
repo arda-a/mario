@@ -18,8 +18,11 @@ function PlayState:init()
     self.gravityOn = true
     self.gravityAmount = 6
 
+    self.startingPosX, self.startingPosY = self:getStartingPosition(self.tileMap)
+
     self.player = Player({
-        x = 0, y = 0,
+        x = self.startingPosX, 
+        y = self.startingPosY,
         width = 16, height = 20,
         texture = 'green-alien',
         stateMachine = StateMachine {
@@ -131,6 +134,26 @@ function PlayState:spawnEnemies()
 
                         table.insert(self.level.entities, snail)
                     end
+                end
+            end
+        end
+    end
+end
+
+--[[
+    Returns the starting coordinates of the player in order to ensure that 
+    the player isn’t placed above a column that just spawned a chasm.
+]]
+function PlayState:getStartingPosition(tileMap)
+    for x = 1, self.tileMap.width do
+
+        -- flag for whether there's ground on this column of the level
+        local isGround = false
+        for y = 1, self.tileMap.height do
+            if not groundFound then
+                if self.tileMap.tiles[y][x].id == TILE_ID_GROUND then
+                    groundFound = true
+                    return self.tileMap.tiles[y][x].x, self.tileMap.tiles[y][x].y
                 end
             end
         end
