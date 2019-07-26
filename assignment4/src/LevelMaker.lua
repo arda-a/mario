@@ -164,3 +164,35 @@ function LevelMaker.generate(width, height)
     
     return GameLevel(entities, objects, map)
 end
+
+function createKey(x, y, blockHeight, objects)
+    return GameObject 
+    {
+        texture = 'keys-and-locks',
+        width = 16,
+        height = 16,
+        x = (x - 1) * TILE_SIZE,
+        y = (blockHeight - 1) * TILE_SIZE,
+
+        -- random variant
+        frame = lockVariant,
+        collidable = true,
+        consumable = true,
+        hit = false,
+        solid = false,
+
+        -- collision function takes itself
+        onConsume = function(obj)
+
+            -- TODO: remove this check
+            if not obj.hit then
+                -- TODO: use another sound
+                gSounds['powerup-reveal']:play()
+
+                obj.hit = true
+                keyTaken = true
+            end
+
+        end
+    }
+end
