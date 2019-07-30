@@ -27,6 +27,18 @@ function LevelMaker.generate(width, height)
         table.insert(tiles, {})
     end
 
+    -- lock and key
+    keyVariant = math.random(#KEYS_AND_LOCKS)
+
+    local keyPosition = math.random(width)
+    local lockPosition = math.random(width)
+    keyTaken = false
+
+    -- loop until they spawn in seperate positions
+    while lockBlockPosition - keyPosition < 10 and lockBlockPosition - keyPosition > -10 do
+        keyPosition = math.random(width)
+    end
+
     -- column by column generation instead of row; sometimes better for platformers
     for x = 1, width do
         local tileID = TILE_ID_EMPTY
@@ -37,8 +49,8 @@ function LevelMaker.generate(width, height)
                 Tile(x, y, tileID, nil, tileset, topperset))
         end
 
-        -- chance to just be emptiness
-        if math.random(7) == 1 then
+        -- chance to just be emptiness (cannot be empty on key or lock positions)
+        if x < 5 and x + 5 < width and keyPosition ~= x and lockPosition ~= x and math.random(7) == 1 then
             for y = 7, height do
                 table.insert(tiles[y],
                     Tile(x, y, tileID, nil, tileset, topperset))
@@ -51,6 +63,11 @@ function LevelMaker.generate(width, height)
             for y = 7, height do
                 table.insert(tiles[y],
                     Tile(x, y, tileID, y == 7 and topper or nil, tileset, topperset))
+            end
+
+            -- the flag position should be empty
+            if x + 5 > width then
+                goto continue
             end
 
             -- chance to generate a pillar
@@ -94,7 +111,13 @@ function LevelMaker.generate(width, height)
             end
 
             -- chance to spawn a block
-            if math.random(10) == 1 then
+            if x == keyPosition then
+                table.insert(objects, createKey(x, y, blockHeight, objects))
+            elseif x == lockBlockPosition then
+                table.insert(objects, createLock(x, y, blockHeight, objects))
+
+            -- chance to spawn a block
+            elseif math.random(10) == 1 then
                 table.insert(objects,
 
                     -- jump block
@@ -157,6 +180,8 @@ function LevelMaker.generate(width, height)
                 )
             end
         end
+
+        ::continue::
     end
 
     local map = TileMap(width, height)
@@ -175,24 +200,83 @@ function createKey(x, y, blockHeight, objects)
         y = (blockHeight - 1) * TILE_SIZE,
 
         -- random variant
-        frame = lockVariant,
-        collidable = true,
-        consumable = true,
+        frame = keyVariant,
         hit = false,
         solid = false,
+        consumable = true,
+        collidable = true,
 
-        -- collision function takes itself
         onConsume = function(obj)
-
-            -- TODO: remove this check
             if not obj.hit then
-                -- TODO: use another sound
                 gSounds['powerup-reveal']:play()
-
                 obj.hit = true
                 keyTaken = true
             end
+        end
+    }
+end
 
+function createLock(x, y, blockHeight, objects)
+    return GameObject {
+        texture = 'keys-and-locks',
+        x = (x - 1) * TILE_SIZE,
+        y = (blockHeight - 1) * TILE_SIZE,
+        width = 16,
+        height = 16,
+
+        frame = 4 + keyVariant,
+        hit = false,
+        solid = true,
+        collidable = true,
+        consumable = false,
+
+        onCollide = function(obj)           
+            gSounds['powerup-reveal']:play()
+            for k, object in pairs(objects) do
+                if keyTaken and object == obj then
+                    table.remove(objects, k)
+                    gameLevel:spawnFlag()
+                end
+            end
+        end
+    }
+end
+
+function createFlag(x, y, blockHeight, objects)
+    return GameObject {
+        texture = 'flags',
+        x = (x - 1) * TILE_SIZE + 8,
+        y = (blockHeight - 1) * TILE_SIZE,
+        width = 16,
+        height = 16,
+
+        frame = 7,
+        solid = false,
+        collidable = false
+    }
+end
+
+function createRod(x, y, blockHeight, objects)
+    return GameObject {
+        texture = 'rods',
+        x = (x - 1) * TILE_SIZE,
+        y = (blockHeight - 1) * TILE_SIZE,
+        width = 16,
+        height = 64,
+
+        frame = 1,
+        hit = false,
+        solid = false,
+        collidable = false,
+        consumable = true,
+
+        onCollide = function(obj)           
+            gSounds['powerup-reveal']:play()
+            return true
+        end,
+
+        onConsume = function(obj)
+            gStateMachine:change('play', obj)
         end
     }
 end
