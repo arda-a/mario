@@ -10,7 +10,12 @@
 
 LevelMaker = Class{}
 
+function LevelMaker.getCurrentLevelWidth()
+    return currentLevelWidth
+end
+
 function LevelMaker.generate(width, height)
+    local currentLevelWidth = width
     local tiles = {}
     local entities = {}
     local objects = {}
@@ -112,9 +117,9 @@ function LevelMaker.generate(width, height)
 
             -- chance to spawn a block
             if x == keyPosition then
-                table.insert(objects, createKey(x, y, blockHeight, objects))
+                table.insert(objects, createKey(x, blockHeight))
             elseif x == lockBlockPosition then
-                table.insert(objects, createLock(x, y, blockHeight, objects))
+                table.insert(objects, createLock(x, blockHeight, objects))
 
             -- chance to spawn a block
             elseif math.random(10) == 1 then
@@ -190,7 +195,7 @@ function LevelMaker.generate(width, height)
     return GameLevel(entities, objects, map)
 end
 
-function createKey(x, y, blockHeight, objects)
+local function createKey(x, blockHeight)
     return GameObject 
     {
         texture = 'keys-and-locks',
@@ -216,7 +221,7 @@ function createKey(x, y, blockHeight, objects)
     }
 end
 
-function createLock(x, y, blockHeight, objects)
+local function createLock(x, blockHeight, objects)
     return GameObject {
         texture = 'keys-and-locks',
         x = (x - 1) * TILE_SIZE,
@@ -235,14 +240,15 @@ function createLock(x, y, blockHeight, objects)
             for k, object in pairs(objects) do
                 if keyTaken and object == obj then
                     table.remove(objects, k)
-                    gameLevel:spawnFlag()
+                    table.insert(objects, createRod(currentLevelWidth - 2, 4, objects))
+                    table.insert(objects, createFlag(currentLevelWidth - 2, 4, objects))
                 end
             end
         end
     }
 end
 
-function createFlag(x, y, blockHeight, objects)
+local function createFlag(x, blockHeight)
     return GameObject {
         texture = 'flags',
         x = (x - 1) * TILE_SIZE + 8,
@@ -256,7 +262,7 @@ function createFlag(x, y, blockHeight, objects)
     }
 end
 
-function createRod(x, y, blockHeight, objects)
+local function createRod(x, blockHeight)
     return GameObject {
         texture = 'rods',
         x = (x - 1) * TILE_SIZE,
@@ -264,10 +270,10 @@ function createRod(x, y, blockHeight, objects)
         width = 16,
         height = 64,
 
-        frame = 1,
+        frame = math.random(1,6),
         hit = false,
         solid = false,
-        collidable = false,
+        collidable = true,
         consumable = true,
 
         onCollide = function(obj)           

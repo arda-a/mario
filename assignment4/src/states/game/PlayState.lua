@@ -18,7 +18,7 @@ function PlayState:init()
     self.gravityOn = true
     self.gravityAmount = 6
 
-    self.startingPosX, self.startingPosY = self:getStartingPosition(self.tileMap)
+    self.startingPosX, self.startingPosY = getStartingPosition(self.tileMap)
 
     self.player = Player({
         x = self.startingPosX, 
@@ -38,6 +38,13 @@ function PlayState:init()
     self:spawnEnemies()
 
     self.player:changeState('falling')
+end
+
+function PlayState:enter(params)
+    
+    self.player.score = params.score == nil ? 0 : params.score
+
+
 end
 
 function PlayState:update(dt)
@@ -144,7 +151,7 @@ end
     Returns the starting coordinates of the player in order to ensure that 
     the player isn’t placed above a column that just spawned a chasm.
 ]]
-function PlayState:getStartingPosition(tileMap)
+local function getStartingPosition(tileMap)
     for x = 1, self.tileMap.width do
 
         -- flag for whether there's ground on this column of the level
