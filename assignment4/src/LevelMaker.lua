@@ -36,7 +36,7 @@ function LevelMaker.generate(width, height)
     keyTaken = false
 
     -- loop until they spawn in seperate positions
-    while lockBlockPosition - keyPosition < 10 and lockBlockPosition - keyPosition > -10 do
+    while lockPosition - keyPosition < 10 and lockPosition - keyPosition > -10 do
         keyPosition = math.random(width)
     end
 
@@ -191,7 +191,7 @@ function LevelMaker.generate(width, height)
     return GameLevel(entities, objects, map)
 end
 
-local function createKey(x, blockHeight)
+function createKey(x, blockHeight)
     return GameObject 
     {
         texture = 'keys-and-locks',
@@ -217,7 +217,7 @@ local function createKey(x, blockHeight)
     }
 end
 
-local function createLock(x, blockHeight, objects)
+function createLock(x, blockHeight, objects)
     return GameObject {
         texture = 'keys-and-locks',
         x = (x - 1) * TILE_SIZE,
@@ -244,7 +244,7 @@ local function createLock(x, blockHeight, objects)
     }
 end
 
-local function createFlag(x, blockHeight)
+function createFlag(x, blockHeight)
     return GameObject {
         texture = 'flags',
         x = (x - 1) * TILE_SIZE + 8,
@@ -258,7 +258,7 @@ local function createFlag(x, blockHeight)
     }
 end
 
-local function createRod(x, blockHeight)
+function createRod(x, blockHeight)
     return GameObject {
         texture = 'rods',
         x = (x - 1) * TILE_SIZE,
