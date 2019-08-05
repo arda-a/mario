@@ -10,10 +10,6 @@
 
 LevelMaker = Class{}
 
-function LevelMaker.getCurrentLevelWidth()
-    return currentLevelWidth
-end
-
 function LevelMaker.generate(width, height)
     local currentLevelWidth = width
     local tiles = {}
@@ -281,8 +277,8 @@ local function createRod(x, blockHeight)
             return true
         end,
 
-        onConsume = function(obj)
-            gStateMachine:change('play', obj)
+        onConsume = function(player, obj)
+            gStateMachine:change('play', { width = currentLevelWidth + 20, score = player.score })
         end
     }
 end
