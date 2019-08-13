@@ -31,13 +31,13 @@ function LevelMaker.generate(width, height)
     -- lock and key
     keyVariant = math.random(#KEYS_AND_LOCKS)
 
-    local keyPosition = math.random(width)
-    local lockPosition = math.random(width)
+    local keyPosition = math.random(width - 5)
+    local lockPosition = math.random(width - 5)
     keyTaken = false
 
     -- loop until they spawn in seperate positions
     while lockPosition - keyPosition < 10 and lockPosition - keyPosition > -10 do
-        keyPosition = math.random(width)
+        keyPosition = math.random(width - 5)
     end
 
     -- column by column generation instead of row; sometimes better for platformers
@@ -111,7 +111,7 @@ function LevelMaker.generate(width, height)
                 )
             end
 
-            -- chance to spawn a block
+            -- chance to spawn key or lock
             if x == keyPosition then
                 table.insert(objects, createKey(x, blockHeight))
             elseif x == lockBlockPosition then
